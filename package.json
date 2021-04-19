@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "webpack serve",
     "test": "jest --config jestconfig.json",
-    "build": "tsc",
+    "build": "webpack",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "prepare": "npm run build",
