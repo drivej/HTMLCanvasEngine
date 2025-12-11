@@ -1,8 +1,10 @@
 import Camera from './Camera';
+import { Canvas } from './Canvas';
 import Color from './Color';
-import Projection from './Projection';
 import Point from './Point';
+import Projection from './Projection';
 import { DefaultRenderer } from './renderers/DefaultRenderer';
+import { TransformCenter } from './TransformCenter';
 import { UIMouse, UIMouseConfig } from './UIMouse';
 
 export interface SpriteConfig extends UIMouseConfig {
@@ -10,24 +12,37 @@ export interface SpriteConfig extends UIMouseConfig {
   className?: string;
   position?: Point;
   friction?: Point;
+  rotation?: number;
+  scale?: number;
+  alpha?: number;
   vector?: Point;
-  canvas?: OffscreenCanvas;
+  canvas?: Canvas;
+  transformCenter?: TransformCenter;
   width?: number;
   height?: number;
   color?: Color;
   physics?: boolean;
   smoothing?: boolean;
   mouseEnabled?: boolean;
-  // bitmapData?: CanvasImageSource;
+  alwaysRender?: boolean;
+  onTick?(e: Sprite): void;
+  renderer?(sprite: Sprite, context: CanvasRenderingContext2D, canvas: HTMLCanvasElement, camera?: Camera): void;
 }
 
-export default class Sprite {
+let UID = 0;
+
+export class Sprite {
+  UID = `u${UID++}`;
+  __REMOVE = false;
   id = '';
   className = 'Sprite';
   onstage = false;
   children: Sprite[] = [];
   position = new Point(0, 0, 0);
   friction = new Point(0.99, 0.99, 0.99);
+  rotation = 0;
+  scale = 1;
+  alpha = 1;
   vector = new Point(0, 0, 0);
   width = 10;
   height = 10;
@@ -35,16 +50,15 @@ export default class Sprite {
   physics = true;
   smoothing = false;
   mouseEnabled = false;
-  canvas = new OffscreenCanvas(10, 10);
-  // context: OffscreenCanvasRenderingContext2D = this.canvas.getContext('2d') || new OffscreenCanvasRenderingContext2D();
-  context: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D; // = this.canvas.getContext('2d') || new OffscreenCanvasRenderingContext2D();
-  transformCenter = new Point();
+  _canvas = new Canvas(10, 10);
+  canvas = this._canvas.$canvas;
+  context = this._canvas.context;
+  transformCenter = new TransformCenter(0.5, 0.5);
   projection: Projection = new Projection({ color: this.color.clone() });
-  // _bitmapData: CanvasImageSource | null = null;
+  alwaysRender = false;
+  data: any;
   renderer = DefaultRenderer;
-  // onClick?(sprite: Sprite): void;
-  // onDown?(sprite: Sprite): void;
-
+  onTick?(e: Sprite): void;
   onDown?(e: UIMouse): void;
   onMove?(e: UIMouse): void;
   onDrag?(e: UIMouse): void;
@@ -54,55 +68,36 @@ export default class Sprite {
   onClick?(e: UIMouse): void;
 
   constructor(config: SpriteConfig = {}) {
-    Object.assign(this, config);
-    this.transformCenter.x = this.width * 0.5;
-    this.transformCenter.y = this.height * 0.5;
+    Object.assign(this, {}, config);
     this.projection.color.copy(this.color);
-    this.canvas.width = this.width;
-    this.canvas.height = this.height;
-    this.context = this.canvas.getContext('2d') || new OffscreenCanvasRenderingContext2D();
-    // any effect?
     this.context.imageSmoothingEnabled = true;
-    this.redraw();
-  }
-
-  // set bitmapData(val: CanvasImageSource) {
-  //   this._bitmapData = val;
-  //   // this.canvas.width = val.width as number;
-  //   // this.canvas.height = val.height as number;
-  //   this.context.clearRect(0, 0, this.width, this.height);
-  //   this.context.drawImage(val, 0, 0, this.width, this.height);
-  // }
-
-  redraw() {
-    this.canvas.width = this.width;
-    this.canvas.height = this.height;
-    this.context.clearRect(0, 0, this.width, this.height);
-    this.context.fillStyle = this.color.toRGBA();
-    this.context.fillRect(0, 0, this.width, this.height);
   }
 
   tick() {
-    this.position.add(this.vector);
     if (this.physics === true) {
+      this.position.add(this.vector);
       this.vector.multiply(this.friction);
     }
+    this?.onTick?.call(this, this);
   }
 
   project(camera: Camera) {
     this.onstage = camera.position.z < this.position.z;
     if (this.onstage === true) {
       this.projection.z = this.position.z - camera.position.z;
-      const zf = camera.zFactor(this.projection.z);
-      const p = camera.position.clone().subtract(this.position).subtract(this.transformCenter);
-      this.projection.x = camera.viewport.centerX + p.x * zf;
-      this.projection.y = camera.viewport.centerY + p.y * zf;
-      this.projection.width = this.width * zf;
-      this.projection.height = this.height * zf;
+      const zf = (this.projection.zFactor = camera.zFactor(this.projection.z));
+      const p = camera.position.clone().subtract(this.position);
+      this.projection.offsetX = camera.viewport.centerX - p.x;
+      this.projection.offsetY = camera.viewport.centerY - p.y;
+      this.projection.width = this.width * this.scale * zf;
+      this.projection.height = this.height * this.scale * zf;
+      this.projection.x = camera.viewport.centerX - p.x * zf - this.transformCenter.x * this.projection.width;
+      this.projection.y = camera.viewport.centerY - p.y * zf - this.transformCenter.y * this.projection.height;
+      this.projection.alpha = this.alpha;
     }
   }
 
-  render(context: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    this.renderer(this, context, canvas);
+  render(context: CanvasRenderingContext2D, canvas: HTMLCanvasElement, camera: Camera) {
+    this.renderer(this, context, canvas, camera);
   }
 }

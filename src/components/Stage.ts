@@ -1,7 +1,7 @@
 import Camera from './Camera';
 import Color from './Color';
 import Point from './Point';
-import Sprite from './Sprite';
+import { Sprite } from './Sprite';
 import { UIMouse } from './UIMouse';
 
 interface StageConfig {
@@ -17,6 +17,7 @@ export default class Stage {
   context: CanvasRenderingContext2D = this.canvas.getContext('2d') || new CanvasRenderingContext2D();
   color: Color = Color.black;
   mouse: UIMouse;
+  cameraPosition = new Point();
 
   constructor(config: StageConfig) {
     Object.assign(this, config);
@@ -29,8 +30,10 @@ export default class Stage {
     this.mouse = new UIMouse(this.canvas, {
       onDown: (e) => this.handleDown(e),
       onDrag: (e) => this.handleDrag(e),
-      onUp: (e) => this.handleUp(e),
       onWheel: (e) => this.handleWheel(e),
+      onThrow: (e) => this.handleThrow(e),
+      onClick: (e) => this.handleClick(e),
+      onUp: (e) => this.handleUp(e),
     });
   }
 
@@ -57,11 +60,15 @@ export default class Stage {
     return sprite;
   }
 
+  removeChild(child: Sprite) {
+    child.__REMOVE = true;
+  }
+
   clear(): Stage {
     const w = this.canvas.width;
     const h = this.canvas.height;
-    this.context.clearRect(0, 0, w, h);
-    this.context.fillStyle = this.color.toRGB();
+    this.context.globalAlpha = 1;
+    this.context.fillStyle = this.color.toRGBA();
     this.context.fillRect(0, 0, w, h);
     return this;
   }
@@ -71,24 +78,35 @@ export default class Stage {
     const cvs = this.canvas;
     const ctx = this.context;
     const cam = this.camera;
-    const camZ = cam.position.z;
     const vw = cam.viewport.width;
     const vh = cam.viewport.height;
-    let i = this.children.length;
-    let child;
     let proj;
+    cam.tick();
+
+    let child;
+    let i = this.children.length;
 
     while (i--) {
       child = this.children[i];
+      if (child.__REMOVE === true) {
+        this.children.splice(i, 1);
+        continue;
+      }
+
       child.tick();
-      if (child.position.z > camZ) {
-        child.project(cam);
+      child.project(cam);
+
+      if (child.alwaysRender) {
+        child.onstage = true;
+      } else {
         if (child.onstage === true) {
           proj = child.projection;
-          if (proj.x + proj.width > 0 && proj.x < vw && proj.y + proj.height > 0 && proj.y < vh) {
-            child.render(ctx, cvs);
-          }
+          child.onstage = proj.x + proj.width > 0 && proj.x < vw && proj.y + proj.height > 0 && proj.y < vh;
         }
+      }
+
+      if (child.onstage) {
+        child.render(ctx, cvs, cam);
       }
     }
     return this;
@@ -99,10 +117,7 @@ export default class Stage {
   //
 
   getSpriteAt(point: Point): Sprite | null {
-    let child;
-    let i = this.children.length;
-    while (i--) {
-      child = this.children[i];
+    for (const child of this.children) {
       if (child.mouseEnabled === true && child.onstage === true && child.projection.containsPoint(point)) {
         return child;
       }
@@ -110,33 +125,40 @@ export default class Stage {
     return null;
   }
 
-  cameraPosition = new Point();
-  mouseTarget: Sprite | null = null;
-
   handleDown(e: UIMouse) {
     this.cameraPosition = this.camera.position.clone();
-    this.mouseTarget = this.getSpriteAt(new Point(e.down.x, e.down.y));
-    if (this.mouseTarget) {
-      e.currentTarget = this.mouseTarget;
-      this.mouseTarget?.onDown?.call(null, e);
-    }
+    this.camera.vector.setLength(0);
+    e.currentTarget = this.getSpriteAt(new Point(e.down.position.x, e.down.position.y)) ?? this.camera;
+    e?.currentTarget?.onDown?.call(null, e);
   }
 
   handleDrag(e: UIMouse) {
-    this.camera.position = this.cameraPosition.clone().subtract(new Point(e.drag.x, e.drag.y));
-    this.tick();
+    if (e.currentTarget === this.camera) {
+      this.camera.position.x = this.cameraPosition.x + e.drag.position.x;
+      this.camera.position.y = this.cameraPosition.y + e.drag.position.y;
+    } else {
+      e?.currentTarget?.onDrag?.call(null, e);
+    }
+  }
+
+  handleClick(e: UIMouse) {
+    e?.currentTarget?.onClick?.call(null, e);
   }
 
   handleUp(e: UIMouse) {
-    const upTarget = this.getSpriteAt(new Point(e.up.x, e.up.y));
-    if (upTarget === this.mouseTarget && this.mouseTarget) {
-      e.currentTarget = upTarget;
-      upTarget?.onClick?.call(null, e);
-    }
+    e.currentTarget = null;
   }
 
   handleWheel(e: UIMouse) {
     this.camera.position.z += e.deltaY;
-    this.tick();
+  }
+
+  handleThrow(e: UIMouse) {
+    if (e.currentTarget === this.camera) {
+      this.camera.vector.x = -e.throw.position.x;
+      this.camera.vector.y = -e.throw.position.y;
+    } else {
+      e?.currentTarget?.onThrow?.call(null, e);
+    }
   }
 }

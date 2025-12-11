@@ -4,7 +4,7 @@ export default class Color {
   r = 0;
   g = 0;
   b = 0;
-  a = 0;
+  a = 1;
   static green: Color = new Color(0, 255, 0);
   static red: Color = new Color(255, 0, 0);
   static black: Color = new Color(0, 0, 0);
@@ -15,15 +15,16 @@ export default class Color {
       r: clamp(r, 0, 255),
       g: clamp(g, 0, 255),
       b: clamp(b, 0, 255),
-      a: clamp(r, 0, 1),
+      a: clamp(a, 0, 1),
     });
   }
 
-  interpolate(toColor: { r: number; g: number; b: number }, p: number) {
+  interpolate(toColor: Color, p: number) {
     return new Color(
       interpolate(this.r, toColor.r, p),
       interpolate(this.g, toColor.g, p),
       interpolate(this.b, toColor.b, p),
+      interpolate(this.a, toColor.a, p),
     );
   }
 
@@ -38,7 +39,7 @@ export default class Color {
   }
 
   clone() {
-    return new Color(this.r, this.g, this.b);
+    return new Color(this.r, this.g, this.b, this.a);
   }
 
   copy(color: Color) {
@@ -46,6 +47,6 @@ export default class Color {
   }
 
   static random() {
-    return new Color(rand(0, 255), rand(0, 255), rand(0, 255));
+    return new Color(rand(0, 255), rand(0, 255), rand(0, 255), rand(0, 1));
   }
 }

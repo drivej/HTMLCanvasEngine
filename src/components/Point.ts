@@ -1,4 +1,4 @@
-import { interpolate, _rad, rad } from './Utils';
+import { _rad, interpolate, rad } from './Utils';
 
 export default class Point {
   x: number = 0;
@@ -9,10 +9,7 @@ export default class Point {
     Object.assign(this, { x, y, z });
   }
 
-  length(len?: number): number {
-    if (len) {
-      return this.normalize().scale(len).length();
-    }
+  length(): number {
     return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
   }
 
@@ -40,28 +37,6 @@ export default class Point {
   clone(): Point {
     return new Point(this.x, this.y, this.z);
   }
-
-  // set(x: number, y: number, z: number): Point {
-  //   this.x = x;
-  //   this.y = y;
-  //   this.z = z;
-  //   return this;
-  // }
-
-  // setX(x: number) {
-  //   this.x = x;
-  //   return this;
-  // }
-
-  // setY(y: number) {
-  //   this.y = y;
-  //   return this;
-  // }
-
-  // setZ(z: number) {
-  //   this.z = z;
-  //   return this;
-  // }
 
   apply(p: { x: number; y: number; z: number }) {
     this.x = p.x;
@@ -99,20 +74,16 @@ export default class Point {
   }
 
   floor() {
-    /* tslint:disable:no-bitwise */
     this.x = this.x | 0;
     this.y = this.y | 0;
     this.z = this.z | 0;
-    /* tslint:enable:no-bitwise */
     return this;
   }
 
   round() {
-    /* tslint:disable:no-bitwise */
     this.x = (this.x + 0.5) | 0;
     this.y = (this.y + 0.5) | 0;
     this.z = (this.z + 0.5) | 0;
-    /* tslint:enable:no-bitwise */
     return this;
   }
 

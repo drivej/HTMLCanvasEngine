@@ -1,5 +1,6 @@
+import Point from './Point';
 import { Rect } from './Rect';
-import Sprite from './Sprite';
+import { Sprite } from './Sprite';
 
 export default class Camera extends Sprite {
   focalLength = 100;

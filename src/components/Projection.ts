@@ -7,17 +7,18 @@ interface ProjectionProps {
   width?: number;
   height?: number;
   rotation?: number;
+  alpha?: number;
   color?: Color;
 }
 
 export default class Projection extends Rect {
-  // x: number = 0;
-  // y: number = 0;
+  offsetX: number = 0;
+  offsetY: number = 0;
   z: number = 0;
-  // width: number = 1;
-  // height: number = 1;
+  zFactor: number = 1;
   rotation: number = 0;
   color: Color = new Color();
+  alpha: number = 1;
 
   constructor(props: ProjectionProps = {}) {
     super();

@@ -4,11 +4,11 @@
   "description": "canvas fun",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "Xtypes": "./custom.d.ts",
   "scripts": {
-    "dev": "webpack serve",
+    "devX": "webpack serve",
     "test": "jest --config jestconfig.json",
     "build": "tsc",
+    "dev": "tsc -w",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "prepare": "npm run build",
@@ -28,6 +28,10 @@
   "keywords": [],
   "author": "Jason Contento",
   "license": "ISC",
+  "dependencies": {},
+  "files": [
+    "lib/**/*"
+  ],
   "devDependencies": {
     "@babel/core": "^7.12.3",
     "@babel/preset-env": "^7.12.1",
@@ -52,11 +56,5 @@
     "webpack": "^5.5.1",
     "webpack-cli": "^4.2.0",
     "webpack-dev-server": "^3.11.0"
-  },
-  "files": [
-    "lib/**/*"
-  ],
-  "dependencies": {
-    "gsap": "^3.5.1"
   }
 }

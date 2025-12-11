@@ -60,7 +60,32 @@ export class Rect {
     this.updateHeight();
   }
 
+  clone() {
+    return new Rect(this.x, this.y, this.height, this.width);
+  }
+
+  static add(r1: Rect, r2: Rect) {
+    let x = Math.min(r2.x, r1.x);
+    let y = Math.min(r2.y, r1.y);
+    let width = Math.max(r2.right, r1.right) - x;
+    let height = Math.max(r2.bottom, r1.bottom) - y;
+    return new Rect(x, y, width, height);
+  }
+
+  add(rect: Rect) {
+    this.x = Math.min(rect.x, this.x);
+    this.y = Math.min(rect.y, this.y);
+    this.width = Math.max(rect.right, this.right) - this.x;
+    this.height = Math.max(rect.bottom, this.bottom) - this.y;
+    return this;
+  }
+
   containsPoint(point: Point) {
     return point.x >= this.x && point.y >= this.y && point.x < this.right && point.y < this.bottom;
+  }
+
+  intersectsRect(rect: Rect) {
+    return this.x <= rect.right && this.right >= rect.x && this.y <= rect.bottom && this.bottom >= rect.y;
+    // return this.containsPoint(new Point(rect.x, rect.y)) && this.containsPoint(new Point(rect.right, rect.bottom));
   }
 }

@@ -5,7 +5,7 @@ export function interpolate(n1: number, n2: number, p: number) {
   return n1 + (n2 - n1) * p;
 }
 
-export function rand(n1: number, n2: number, rnd: boolean = false) {
+export function rand(n1: number = 1, n2: number = 0, rnd: boolean = false) {
   if (!n2) {
     n2 = n1;
     n1 = 0;
