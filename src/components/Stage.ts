@@ -8,7 +8,7 @@ interface StageConfig {
   color?: Color;
 }
 
-let sortTimeout: NodeJS.Timeout = setTimeout(() => 1, 1);
+let sortTimeout: ReturnType<typeof setTimeout> = setTimeout(() => 1, 1);
 
 export default class Stage {
   children: Sprite[] = [];

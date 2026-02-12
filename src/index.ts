@@ -8,18 +8,20 @@ import { TileRenderer } from './components/renderers/TileRenderer';
 import { TileXRenderer } from './components/renderers/TileXRenderer';
 import { Sprite } from './components/Sprite';
 import Stage from './components/Stage';
-import * as Utils from './components/Utils';
 
 export {
+  BitmapRenderer, //
   Canvas,
-  Stage,
-  Sprite,
-  Utils,
+  Color,
+  DefaultRenderer,
   Point,
   Rect,
-  Color,
-  BitmapRenderer,
+  Sprite,
+  Stage,
   TileRenderer,
-  DefaultRenderer,
-  TileXRenderer,
+  TileXRenderer
 };
+
+// Export Utils as a namespace
+  export * as Utils from './components/Utils';
+
