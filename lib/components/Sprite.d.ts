@@ -24,6 +24,7 @@ export interface SpriteConfig extends UIMouseConfig {
     smoothing?: boolean;
     mouseEnabled?: boolean;
     alwaysRender?: boolean;
+    data?: any;
     onTick?(e: Sprite): void;
     renderer?(sprite: Sprite, context: CanvasRenderingContext2D, canvas: HTMLCanvasElement, camera?: Camera): void;
 }
