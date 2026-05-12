@@ -58,15 +58,23 @@ export class UIMouse {
 
   initEvents() {
     if ('addEventListener' in this.target) {
-      this.target.addEventListener('mousedown', (e) => this.handleMouseDown(this.normalizeEvent(e)));
-      this.target.addEventListener('mousemove', (e) => this.handleMouseMove(this.normalizeEvent(e)));
-      this.target.addEventListener('mouseup', (e) => this.handleMouseUp(this.normalizeEvent(e)));
-      this.target.addEventListener('mouseleave', (e) => this.handleMouseLeave(this.normalizeEvent(e)));
       this.target.addEventListener('wheel', (e) => this.handleMouseWheel(e), { passive: true });
-      this.target.addEventListener('touchstart', (e) => this.handleMouseDown(this.normalizeEvent(e)));
-      this.target.addEventListener('touchmove', (e) => this.handleMouseMove(this.normalizeEvent(e)));
-      this.target.addEventListener('touchend', (e) => this.handleMouseUp(this.normalizeEvent(e)));
-      this.target.addEventListener('touchcancel', (e) => this.handleMouseLeave(this.normalizeEvent(e)));
+
+      // this.target.addEventListener('mousedown', (e) => this.handleMouseDown(this.normalizeEvent(e)));
+      // this.target.addEventListener('mousemove', (e) => this.handleMouseMove(this.normalizeEvent(e)));
+      // this.target.addEventListener('mouseup', (e) => this.handleMouseUp(this.normalizeEvent(e)));
+      // this.target.addEventListener('mouseleave', (e) => this.handleMouseLeave(this.normalizeEvent(e)));
+
+      // this.target.addEventListener('touchstart', (e) => this.handleMouseDown(this.normalizeEvent(e)));
+      // this.target.addEventListener('touchmove', (e) => this.handleMouseMove(this.normalizeEvent(e)));
+      // this.target.addEventListener('touchend', (e) => this.handleMouseUp(this.normalizeEvent(e)));
+      // this.target.addEventListener('touchcancel', (e) => this.handleMouseLeave(this.normalizeEvent(e)));
+
+      this.target.addEventListener('pointerdown', (e) => this.handleMouseDown(this.normalizeEvent(e)));
+      this.target.addEventListener('pointermove', (e) => this.handleMouseMove(this.normalizeEvent(e)));
+      this.target.addEventListener('pointerup', (e) => this.handleMouseUp(this.normalizeEvent(e)));
+      this.target.addEventListener('pointerleave', (e) => this.handleMouseLeave(this.normalizeEvent(e)));
+      // add pointer events
     }
   }
 
